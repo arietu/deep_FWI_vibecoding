@@ -11,6 +11,11 @@ def forward_propagate(velocity_model, store_history=False):
     Propagate the wave through the model with a damping boundary layer.
     Optionally stores and returns the full wavefield history.
     """
+    # --- TEMPORARY DEBUGGING ---
+    #print(f"DEBUG: Inside forward_propagate, max of velocity_model is {np.max(velocity_model)}")
+
+    # -------------------------
+
     # Initialize pressure fields
     p_prev = np.zeros((nx, nz))
     p_curr = np.zeros((nx, nz))
@@ -35,7 +40,7 @@ def forward_propagate(velocity_model, store_history=False):
     source = ricker_wavelet(t, f0)
 
     # Data and history arrays
-    receiver_data = np.zeros((len(x_receiver), nt))
+    data = np.zeros((len(x_receiver), nt))
     wavefield_history = []
     if store_history:
         wavefield_history = np.zeros((nt, nx, nz))
@@ -56,16 +61,16 @@ def forward_propagate(velocity_model, store_history=False):
 
         # Record data at receivers
         for j, xr in enumerate(x_receiver):
-            receiver_data[j, i] = p_curr[xr, z_receiver]
+            data[j, i] = p_curr[xr, z_receiver]
         
         # Store wavefield history if requested
         if store_history:
             wavefield_history[i] = p_curr
 
     if store_history:
-        return receiver_data, wavefield_history
+        return data, wavefield_history
     else:
-        return receiver_data
+        return data
 
 def laplacian(field):
     """Compute the Laplacian of a 2D field."""

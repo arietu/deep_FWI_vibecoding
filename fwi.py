@@ -14,6 +14,9 @@ def calculate_gradient(observed_data, synthetic_data, wavefield_history, velocit
     # Initialize gradient
     gradient = np.zeros_like(velocity_model)
 
+    #print(f"DEBUG: max of velocity_current position {np.where(velocity_model == np.max(velocity_model))}")
+    #print(f"DEBUG: Inside calculate_gradient, max of velocity_model is {np.max(velocity_model)}")
+
     # Calculate the residual
     residual = synthetic_data - observed_data
 
