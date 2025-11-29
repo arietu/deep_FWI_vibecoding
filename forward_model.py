@@ -6,8 +6,11 @@ def ricker_wavelet(t, f0):
     r = (np.pi * f0 * (t - 1.0 / f0))
     return (1.0 - 2.0 * r**2) * np.exp(-r**2)
 
-def forward_propagate(velocity_model):
-    """Propagate the wave through the model with a damping boundary layer."""
+def forward_propagate(velocity_model, store_history=False):
+    """
+    Propagate the wave through the model with a damping boundary layer.
+    Optionally stores and returns the full wavefield history.
+    """
     # Initialize pressure fields
     p_prev = np.zeros((nx, nz))
     p_curr = np.zeros((nx, nz))
@@ -31,8 +34,11 @@ def forward_propagate(velocity_model):
     # Source term
     source = ricker_wavelet(t, f0)
 
-    # Data array
-    data = np.zeros((len(x_receiver), nt))
+    # Data and history arrays
+    receiver_data = np.zeros((len(x_receiver), nt))
+    wavefield_history = []
+    if store_history:
+        wavefield_history = np.zeros((nt, nx, nz))
 
     for i in range(nt):
         # Update pressure field based on the wave equation
@@ -42,19 +48,24 @@ def forward_propagate(velocity_model):
         # Inject source at the source location for the current time step
         p_next[x_source, z_source] += source[i] * dt**2
 
-        # Apply damping
+        # Apply damping to the new pressure field
         p_next *= (1 - damping_field * dt)
-        p_curr *= (1 - damping_field * dt)
-
 
         # Update pressure fields for the next time step
         p_prev, p_curr = p_curr, p_next
 
         # Record data at receivers
         for j, xr in enumerate(x_receiver):
-            data[j, i] = p_curr[xr, z_receiver]
+            receiver_data[j, i] = p_curr[xr, z_receiver]
+        
+        # Store wavefield history if requested
+        if store_history:
+            wavefield_history[i] = p_curr
 
-    return data
+    if store_history:
+        return receiver_data, wavefield_history
+    else:
+        return receiver_data
 
 def laplacian(field):
     """Compute the Laplacian of a 2D field."""
